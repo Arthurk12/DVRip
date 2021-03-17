@@ -9,7 +9,10 @@
 #include <arpa/inet.h>
 #include <iostream>
 #include <sstream>
+#include <openssl/md5.h>
 #include "include/json.hpp"
+
+#define sofiaHashChars "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
 
 using json = nlohmann::json;
@@ -20,12 +23,14 @@ class DVRip{
 public:
     DVRip(std::string t_ip, unsigned short int t_port,  std::string t_username, std::string t_password);
     ~DVRip();
-    void login();
+    bool login();
 
 private:
+    char* sofiaHash(std::string t_rawPassword);
     void connectSocket();
-    void send(unsigned short int t_msgCode, json t_data);
-    void receive();
+    json send(unsigned short int t_msgCode, json t_data={}, bool t_waitResponse=true);
+    json receiveJson();
+
 
 
 //variables
@@ -40,7 +45,9 @@ private:
     std::string m_hashedPassword;
     int m_socketFileDescriptor  =0;
 
-    unsigned int m_session      =0;
+    std::string m_session;
     unsigned int m_packetCount  =0;
+
+    const int OK_CODES[2] = {100, 515};
 
 };
